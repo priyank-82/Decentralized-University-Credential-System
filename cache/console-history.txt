@@ -1,0 +1,22 @@
+exit
+clear
+await credentials.isCredentialValid(credHash);
+await credentials.connect(university).revokeCredential(credHash);
+// Output should be: true
+await credentials.isCredentialValid(credHash);
+await credentials.connect(university).issueCredential(student.address, credHash);
+// 'ethers.id' is a handy way to create a bytes32 hash from a string.
+const credHash = ethers.id("Test Credential for Student 123");
+// Output should be: 1n
+await registry.getRole(student.address);
+// Output should be: 2n
+await registry.getRole(university.address);
+await registry.connect(student).registerIdentity(1);
+await registry.connect(university).registerIdentity(2);
+const credentials = await ethers.getContractAt("CredentialStatus", credentialsAddress);
+const credentialsAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+// Paste the address from your 'CredentialStatus deployed to:' output
+const registry = await ethers.getContractAt("DIDRegistry", registryAddress);
+const registryAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+// Paste the address from your 'DIDRegistry deployed to:' output
+const [owner, student, university, employer] = await ethers.getSigners();
