@@ -1,5 +1,17 @@
 # Decentralized Credentials Smart Contract
 
+## Project Overview
+This project implements a decentralized university credentials system using Ethereum smart contracts. It allows universities to issue and manage academic credentials (degrees, certificates, etc.) on the blockchain, ensuring they are tamper-proof, verifiable, and permanently accessible. The system enables universities to issue credentials to students, and anyone can verify the authenticity of these credentials directly through the blockchain.
+
+### Tech Stack
+- **Smart Contracts**: Solidity 0.8.19
+- **Development Environment**: Hardhat
+- **Testing Framework**: Hardhat Test Runner with Mocha & Chai
+- **Blockchain**: Ethereum (EVM-compatible)
+- **Development Tools**: 
+  - Node.js & NPM for package management
+  - Hardhat Toolbox for compilation, testing, and deployment
+
 ## Step 1: Project Setup
 First, you need to set up the project on your local machine.
 
