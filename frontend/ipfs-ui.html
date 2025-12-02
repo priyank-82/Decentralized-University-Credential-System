@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Decentralized Credentials — IPFS + Verification</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Decentralized University Credentials</h1>
+      <p class="lead">Issue, store on IPFS, and verify digital credentials on the blockchain.</p>
+    </header>
+
+    <!-- Config Section -->
+    <section class="card">
+      <h2>⚙️ Configuration</h2>
+      <label>CredentialStatus Contract Address</label>
+      <input id="contractAddr" placeholder="0x..." value="REPLACE_WITH_ADDRESS" />
+      <label>DIDRegistry Contract Address</label>
+      <input id="registryAddr" placeholder="0x..." value="REPLACE_WITH_ADDRESS" />
+      <button id="configBtn">Load Config</button>
+      <div id="configResult" class="result">Config not loaded</div>
+    </section>
+
+    <!-- Identity Section -->
+    <section class="card">
+      <h2>🆔 Identity Management</h2>
+      <label>Choose role</label>
+      <select id="roleSelect">
+        <option value="1">Student</option>
+        <option value="2">University</option>
+        <option value="3">Employer</option>
+      </select>
+      <button id="registerBtn">Register Identity (Demo)</button>
+      <div id="registerResult" class="result">Not registered</div>
+    </section>
+
+    <!-- Issue Credential Section -->
+    <section class="card">
+      <h2>📝 Issue Credential (University)</h2>
+      <label>Holder Address</label>
+      <input id="holderAddress" placeholder="0x..." />
+      <label>Credential Data (JSON)</label>
+      <textarea id="credentialData" placeholder='{"degree":"BSc Computer Science","university":"MIT","year":2024}' rows="4"></textarea>
+      <label>Private Key (for signing, optional)</label>
+      <input id="issuerPrivateKey" type="password" placeholder="0x..." />
+      <button id="issueBtn">Issue Credential + Upload to IPFS</button>
+      <div id="issueResult" class="result">No credential issued</div>
+    </section>
+
+    <!-- Verify Credential Section -->
+    <section class="card">
+      <h2>✓ Verify Credential</h2>
+      <label>Credential Hash (from issue step)</label>
+      <input id="verifyHash" placeholder="0x..." />
+      <label>Or paste credential data to verify</label>
+      <textarea id="verifyData" placeholder='{"degree":"BSc Computer Science","university":"MIT","year":2024}' rows="4"></textarea>
+      <button id="verifyBtn">Verify Credential</button>
+      <div id="verifyResult" class="result">Not verified</div>
+    </section>
+
+    <!-- Retrieve from IPFS Section -->
+    <section class="card">
+      <h2>📂 Retrieve from IPFS</h2>
+      <label>IPFS Hash (CID)</label>
+      <input id="ipfsHash" placeholder="QmXxxx..." />
+      <button id="retrieveBtn">Retrieve from IPFS</button>
+      <div id="retrieveResult" class="result">
+        <pre id="retrievedData"></pre>
+      </div>
+    </section>
+
+    <footer>
+      <p class="muted">
+        This is a demo UI for IPFS + credential verification. 
+        Credentials are signed, stored on IPFS, and verified on-chain.
+      </p>
+    </footer>
+  </main>
+
+  <script src="app-ipfs.js"></script>
+</body>
+</html>

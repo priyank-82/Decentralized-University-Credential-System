@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Decentralized Credentials — Test Scenario</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.4em;
+      margin-bottom: 16px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card h3 {
+      font-size: 1em;
+      margin: 16px 0 8px 0;
+      color: #555;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 6px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #444;
+      font-size: 0.9em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.95em;
+      margin-bottom: 12px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-size: 0.95em;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 0.9em;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .output {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: 200px;
+      overflow-y: auto;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .account-box {
+      background: #f0f4ff;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      color: #333;
+      border-left: 4px solid #667eea;
+    }
+
+    .account-label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .account-address {
+      color: #667eea;
+      word-break: break-all;
+      font-size: 0.8em;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .step-header {
+      background: #667eea;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 0.95em;
+    }
+
+    .credential-result {
+      background: #f8f9fa;
+      border-left: 4px solid #28a745;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 12px;
+      font-size: 0.9em;
+    }
+
+    .credential-result.revoked {
+      border-left-color: #dc3545;
+    }
+
+    .metadata-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.9em;
+    }
+
+    .metadata-table td {
+      padding: 8px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .metadata-table td:first-child {
+      font-weight: 600;
+      color: #667eea;
+      width: 30%;
+    }
+
+    .metadata-table td:nth-child(2) {
+      word-break: break-all;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+
+    footer {
+      text-align: center;
+      color: white;
+      margin-top: 40px;
+      padding: 20px;
+      opacity: 0.8;
+      font-size: 0.9em;
+    }
+
+    .connection-status {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .connection-status.connected {
+      background: #28a745;
+    }
+
+    .connection-status.disconnected {
+      background: #dc3545;
+    }
+
+    .connection-status.connecting {
+      background: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎓 Decentralized Credentials Test UI</h1>
+      <p>Interactive test scenario for the blockchain credentials system</p>
+    </header>
+
+    <div class="grid">
+      <!-- CONNECTION CARD -->
+      <div class="card">
+        <h2>🔗 Connection</h2>
+        
+        <label>RPC URL (Local Hardhat Node)</label>
+        <input id="rpcUrl" type="text" value="http://127.0.0.1:8545" placeholder="http://127.0.0.1:8545" />
+
+        <label>DIDRegistry Address</label>
+        <input id="registryAddress" type="text" placeholder="0x5FbDB2315678afecb367f032d93F642f64180aa3" />
+
+        <label>CredentialStatus Address</label>
+        <input id="credentialsAddress" type="text" placeholder="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" />
+
+        <button onclick="connectToNetwork()">Connect to Hardhat Node</button>
+
+        <div id="connectionStatus" class="status">
+          <span class="connection-status disconnected"></span> Not connected
+        </div>
+
+        <div id="networkOutput" class="output" style="display: none;"></div>
+      </div>
+
+      <!-- ACCOUNTS CARD -->
+      <div class="card">
+        <h2>👥 Test Accounts</h2>
+        <p style="font-size: 0.9em; color: #666; margin-bottom: 12px;">These are pre-funded accounts from the local Hardhat node.</p>
+        
+        <div id="accountsContainer" style="display: none;">
+          <div id="ownerAccount" class="account-box">
+            <div class="account-label">Owner (Index 0)</div>
+            <div class="account-address" id="ownerAddr">-</div>
+          </div>
+
+          <div id="universityAccount" class="account-box">
+            <div class="account-label">University (Index 1)</div>
+            <div class="account-address" id="universityAddr">-</div>
+          </div>
+
+          <div id="studentAccount" class="account-box">
+            <div class="account-label">Student (Index 2)</div>
+            <div class="account-address" id="studentAddr">-</div>
+          </div>
+
+          <div id="employerAccount" class="account-box">
+            <div class="account-label">Employer (Index 3)</div>
+            <div class="account-address" id="employerAddr">-</div>
+          </div>
+        </div>
+
+        <div id="accountsPlaceholder" style="color: #999; text-align: center; padding: 20px;">
+          Connect to view test accounts →
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: REGISTER IDENTITIES -->
+    <div class="card">
+      <div class="step-header">📋 STEP 1: Register Identities</div>
+      
+      <p style="margin-bottom: 16px; color: #666; font-size: 0.9em;">
+        Register the test accounts with their roles: University (role 2), Student (role 1), Employer (role 3)
+      </p>
+
+      <div class="two-column">
+        <button onclick="registerUniversity()" id="registerUniversityBtn" disabled>Register University</button>
+        <button onclick="registerStudent()" id="registerStudentBtn" disabled>Register Student</button>
+        <button onclick="registerEmployer()" id="registerEmployerBtn" disabled>Register Employer</button>
+      </div>
+
+      <div id="registerStatus" class="status"></div>
+      <div id="registerOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 2: CREATE & HASH CREDENTIAL -->
+    <div class="card">
+      <div class="step-header">🔐 STEP 2: Create Credential Data</div>
+      
+      <label>Degree</label>
+      <input id="credentialDegree" type="text" value="Bachelor of Science in Computer Science" placeholder="e.g., Bachelor of Science in Computer Science" />
+
+      <label>University</label>
+      <input id="credentialUniversity" type="text" value="MIT" placeholder="e.g., MIT" />
+
+      <label>Year</label>
+      <input id="credentialYear" type="number" value="2024" placeholder="e.g., 2024" />
+
+      <label>GPA</label>
+      <input id="credentialGPA" type="number" value="3.8" step="0.1" placeholder="e.g., 3.8" />
+
+      <label>Honors</label>
+      <input id="credentialHonors" type="text" value="Magna Cum Laude" placeholder="e.g., Magna Cum Laude" />
+
+      <button onclick="createAndHashCredential()" id="hashCredentialBtn" disabled>Create & Hash Credential</button>
+
+      <div id="hashStatus" class="status"></div>
+      <div id="hashOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 3: ISSUE CREDENTIAL -->
+    <div class="card">
+      <div class="step-header">✍️ STEP 3: Issue Credential (University Issues to Student)</div>
+      
+      <label>Student Address (auto-filled)</label>
+      <input id="studentAddressField" type="text" disabled placeholder="Auto-filled from registered student" />
+
+      <label>Credential Hash (auto-filled)</label>
+      <input id="credentialHashField" type="text" disabled placeholder="Auto-filled from step 2" />
+
+      <label>IPFS Hash (simulated)</label>
+      <input id="ipfsHashInput" type="text" value="QmX8eVbU5xVvvHn4Y2CqKu8R8e1cZuJ5VjD8mK3aNd9pZz" placeholder="QmXxxx..." />
+
+      <button onclick="issueCredential()" id="issueBtn" disabled>Issue Credential</button>
+
+      <div id="issueStatus" class="status"></div>
+      <div id="issueOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 4: RETRIEVE METADATA -->
+    <div class="card">
+      <div class="step-header">📂 STEP 4: Retrieve Credential Metadata</div>
+      
+      <button onclick="retrieveMetadata()" id="metadataBtn" disabled>Get Credential Metadata</button>
+
+      <div id="metadataStatus" class="status"></div>
+      <table id="metadataTable" class="metadata-table" style="display: none;">
+        <tr>
+          <td>Issuer</td>
+          <td id="metadataIssuer">-</td>
+        </tr>
+        <tr>
+          <td>Holder</td>
+          <td id="metadataHolder">-</td>
+        </tr>
+        <tr>
+          <td>IPFS Hash</td>
+          <td id="metadataIPFS">-</td>
+        </tr>
+        <tr>
+          <td>Issue Date</td>
+          <td id="metadataDate">-</td>
+        </tr>
+        <tr>
+          <td>State</td>
+          <td id="metadataState">-</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- STEP 5: CHECK STATUS -->
+    <div class="card">
+      <div class="step-header">✓ STEP 5: Check Credential Status</div>
+      
+      <button onclick="checkCredentialStatus()" id="statusBtn" disabled>Check Credential Status</button>
+
+      <div id="statusOutput" class="credential-result" style="display: none;">
+        <strong>Credential Status: <span id="statusResult">-</span></strong>
+      </div>
+    </div>
+
+    <!-- STEP 6: VERIFY CREDENTIAL -->
+    <div class="card">
+      <div class="step-header">🔍 STEP 6: Verify Credential Data (Employer Verifies)</div>
+      
+      <p style="margin-bottom: 16px; color: #666; font-size: 0.9em;">
+        Employer will verify the credential by recomputing the hash from the credential data.
+      </p>
+
+      <button onclick="verifyCredential()" id="verifyBtn" disabled>Verify Credential Data</button>
+
+      <div id="verifyStatus" class="status"></div>
+      <div id="verifyOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 7: RETRIEVE IPFS HASH -->
+    <div class="card">
+      <div class="step-header">📥 STEP 7: Get IPFS Hash for Off-Chain Retrieval</div>
+      
+      <button onclick="retrieveIPFSHash()" id="ipfsHashBtn" disabled>Retrieve IPFS Hash</button>
+
+      <div id="ipfsHashStatus" class="status"></div>
+      <div id="ipfsHashOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 8: REVOKE CREDENTIAL -->
+    <div class="card">
+      <div class="step-header">🚫 STEP 8: Revoke Credential (University Revokes)</div>
+      
+      <p style="margin-bottom: 16px; color: #666; font-size: 0.9em;">
+        Only the original issuing university can revoke the credential.
+      </p>
+
+      <button onclick="revokeCredential()" id="revokeBtn" disabled>Revoke Credential</button>
+
+      <div id="revokeStatus" class="status"></div>
+      <div id="revokeOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <!-- STEP 9: CHECK STATUS AFTER REVOKE -->
+    <div class="card">
+      <div class="step-header">✗ STEP 9: Verify Revocation</div>
+      
+      <button onclick="checkStatusAfterRevoke()" id="revokeCheckBtn" disabled>Check Status After Revocation</button>
+
+      <div id="revokeCheckOutput" class="credential-result revoked" style="display: none;">
+        <strong>Credential Status (after revoke): <span id="revokeCheckResult">-</span></strong>
+      </div>
+    </div>
+
+    <!-- STEP 10: TEST ERROR HANDLING -->
+    <div class="card">
+      <div class="step-header">⚠️ STEP 10: Test Error Handling</div>
+      
+      <p style="margin-bottom: 16px; color: #666; font-size: 0.9em;">
+        Try to perform restricted operations to verify error handling.
+      </p>
+
+      <button onclick="testErrorHandling()" id="errorBtn" disabled>Test Error Handling</button>
+
+      <div id="errorStatus" class="status"></div>
+      <div id="errorOutput" class="output" style="display: none;"></div>
+    </div>
+
+    <footer>
+      <p>💡 Tip: Keep your local Hardhat node running (<code>npx hardhat node</code>) in another terminal.</p>
+      <p>✅ Ensure contracts are deployed before connecting.</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.0/ethers.umd.min.js"></script>
+  <script>
+    // Wait for ethers to load
+    if (typeof ethers === 'undefined') {
+      console.error('ethers.js failed to load from CDN');
+    } else {
+      console.log('ethers.js loaded successfully');
+    }
+  </script>
+  <script src="test-ui.js"></script>
+</body>
+</html>

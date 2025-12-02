@@ -110,9 +110,13 @@ const credentials = await ethers.getContractAt("CredentialStatus", credentialsAd
    const credHash = ethers.id("Test Credential for Student 123");
    // 'ethers.id' is a handy way to create a bytes32 hash from a string.
 
-   await credentials.connect(university).issueCredential(student.address, credHash);
+   await credentials.connect(university).issueCredential(student.address, credHash, "QmXxxx", "0x");
    ```
-   This will fail if the university address wasn't registered first.
+   This will fail if the university address wasn't registered first. The parameters are:
+   - `student.address` — the credential holder
+   - `credHash` — the keccak256 hash of the credential data
+   - `"QmXxxx"` — IPFS hash (CID) where the full credential is stored
+   - `"0x"` — optional schema metadata
 
    d. Verify the Credential: Now, anyone (even the employer) can check if it's valid.
    ```javascript
@@ -120,18 +124,56 @@ const credentials = await ethers.getContractAt("CredentialStatus", credentialsAd
    // Output should be: true
    ```
 
-   e. Revoke the Credential: Only the original issuer (university) can revoke it.
+   e. Get Credential Metadata (New with IPFS):
+   ```javascript
+   const metadata = await credentials.getCredentialMetadata(credHash);
+   console.log(metadata);
+   // Output includes: issuer, holder, ipfsHash, issueDate, state
+   ```
+
+   f. Retrieve IPFS Hash for Off-Chain Data:
+   ```javascript
+   const ipfsHash = await credentials.getCredentialIPFSHash(credHash);
+   console.log("IPFS CID:", ipfsHash);
+   // Output: QmXxxx (use this to fetch full credential from IPFS)
+   ```
+
+   g. Verify Credential Data Integrity (New with Verification):
+   ```javascript
+   const credentialData = "Test Credential for Student 123";
+   const dataHash = ethers.keccak256(ethers.toUtf8Bytes(credentialData));
+   
+   // Employer verifies the credential
+   await credentials.connect(employer).verifyCredentialData(credentialData, credHash);
+   // This emits a CredentialVerified event (no PII logged)
+   
+   // Check result
+   await credentials.isCredentialValid(credHash);
+   // Output should be: true
+   ```
+
+   h. Revoke the Credential: Only the original issuer (university) can revoke it.
    ```javascript
    await credentials.connect(university).revokeCredential(credHash);
    ```
 
-   f. Verify Again:
+   i. Verify Again:
    ```javascript
    await credentials.isCredentialValid(credHash);
-   // Output should be: false
+   // Output should be: false (revoked credentials are invalid)
    ```
 
-This manual test proves that your entire workflow (role registration, issuance, verification, revocation) is working as intended!
+   j. Test Error Handling: Try to issue as a non-university account (should fail):
+   ```javascript
+   try {
+     await credentials.connect(employer).issueCredential(student.address, credHash, "QmXxxx", "0x");
+   } catch (e) {
+     console.log("✓ Correctly rejected:", e.reason);
+     // Output: "CredentialStatus: Caller is not a registered University"
+   }
+   ```
+
+**This manual test proves that your entire workflow (role registration, issuance with IPFS, verification, revocation) is working as intended!**
 
 ### Prerequisites
 - Node.js and npm installed on your system
@@ -148,7 +190,7 @@ cd cse540-credentials
 2. Install dependencies:
 ```bash
 npm install
-```
+``````
 
 ### Configuration
 
@@ -188,6 +230,171 @@ npx hardhat test
   - Credential revocation
   - Status checking
 
+## Step 5: Test IPFS + Credential Verification (New)
+
+This project now includes IPFS integration and credential verification. Use the test script to validate the full workflow:
+
+### Prerequisites
+1. Ensure your local Hardhat node is running (from Step 3):
+```bash
+npx hardhat node
+```
+
+2. Deploy contracts (if not already done):
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+3. Install IPFS client library:
+```bash
+npm install ipfs-http-client ethers
+```
+
+### Run the Test Script
+In a second terminal, run the comprehensive automated test script:
+```bash
+npx hardhat run scripts/test-ipfs-verification.js --network localhost
+```
+
+**What the test does:**
+- Registers identities (University, Student, Employer)
+- Creates credential data and computes keccak256 hash
+- Issues credential with IPFS reference (simulated CID)
+- Retrieves credential metadata from on-chain
+- Verifies credential data integrity
+- Tests credential revocation
+- Validates error handling
+
+**Expected Output:**
+```
+======================================================================
+Testing Decentralized Credentials with IPFS + Verification
+======================================================================
+
+✓ Test Accounts:
+  Owner:       0x...
+  University:  0x...
+  Student:     0x...
+  Employer:    0x...
+
+[... test progress ...]
+
+✓ ALL TESTS PASSED!
+======================================================================
+```
+
+## Step 6: Interactive Test UI (No MetaMask Required)
+
+A new interactive web UI has been created that allows you to run the test scenario through a browser interface. This UI connects directly to your local Hardhat node and executes all test steps without requiring MetaMask.
+
+### How to Use the Test UI
+
+1. **Start your local Hardhat node** (if not already running):
+```bash
+npx hardhat node
+```
+
+2. **In another terminal, deploy contracts** (if not already deployed):
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
+Save the contract addresses from the output.
+
+3. **Serve the frontend**:
+```bash
+# Option 1: Using Node.js http-server (recommended)
+npx http-server frontend -c-1 -p 8000
+
+# Option 2: Using Python
+python3 -m http.server 8000 --directory frontend
+
+# Option 3: Using any other local server
+```
+
+4. **Open the UI** in your browser:
+```
+http://localhost:8000/test-ui.html
+```
+
+5. **Configure the connection**:
+   - RPC URL: `http://127.0.0.1:8545` (default)
+   - DIDRegistry Address: Paste from deployment output
+   - CredentialStatus Address: Paste from deployment output
+   - Click "Connect to Hardhat Node"
+
+6. **Run the test scenario** step by step:
+   - **Step 1**: Register test identities (University, Student, Employer)
+   - **Step 2**: Create credential data and generate hash
+   - **Step 3**: Issue credential with IPFS reference
+   - **Step 4**: Retrieve credential metadata from on-chain
+   - **Step 5**: Check credential status
+   - **Step 6**: Verify credential data integrity
+   - **Step 7**: Retrieve IPFS hash for off-chain data
+   - **Step 8**: Revoke credential (University only)
+   - **Step 9**: Verify revocation
+   - **Step 10**: Test error handling
+
+### Test UI Features
+
+- **No MetaMask required**: Connects directly to local Hardhat node
+- **Test accounts pre-filled**: Uses hardcoded test account private keys from Hardhat
+- **Real transaction execution**: All operations are actual blockchain transactions
+- **Live feedback**: See transaction hashes, block numbers, and event logs
+- **Metadata display**: View credential metadata in formatted tables
+- **Error handling**: Test invalid operations and see proper error messages
+
+### What the Test UI Validates
+
+✅ Identity registration with role-based access control  
+✅ Credential issuance with IPFS references  
+✅ Data integrity verification through hash comparison  
+✅ Metadata retrieval and display  
+✅ Credential status checking  
+✅ Credential revocation (issuer only)  
+✅ Error handling for unauthorized operations  
+✅ Non-existent credential handling  
+
+### Quick Reference: All Test Commands
+
+| Command | Description |
+|---------|-------------|
+| `npx hardhat compile` | Compile smart contracts |
+| `npx hardhat node` | Start local blockchain |
+| `npx hardhat run scripts/deploy.js --network localhost` | Deploy contracts to local node |
+| `npx hardhat run scripts/test-ipfs-verification.js --network localhost` | Run automated IPFS + verification tests (CLI) |
+| `npx http-server frontend -c-1 -p 8000` | Start HTTP server for test UI |
+| `npx hardhat console --network localhost` | Open interactive console for manual testing |
+
+✓ ALL TESTS PASSED!
+======================================================================
+```
+
+## IPFS + Verification Features
+
+The enhanced smart contracts now support:
+
+### 1. IPFS Storage Reference
+- Credentials store IPFS CID (Content Identifier) on-chain
+- Full credential blob stored off-chain on IPFS
+- On-chain hash ensures integrity without exposing PII
+
+### 2. Credential Verification
+- `verifyCredentialData(data, hash)` — Verify credential by recomputing hash
+- `getCredentialMetadata(hash)` — Retrieve issuer, holder, dates, schema
+- `getCredentialIPFSHash(hash)` — Get IPFS CID for blob retrieval
+
+### 3. Helper Libraries
+Located in `lib/`:
+- **`ipfsHelper.js`** — Upload/retrieve from IPFS, compute hashes
+- **`cryptoHelper.js`** — Sign credentials, verify signatures, hash data
+
+### 4. Frontend (Optional)
+A demo frontend is available at `frontend/ipfs-ui.html`:
+```bash
+npx http-server frontend -c-1
+# Open http://localhost:8080/ipfs-ui.html
+```
+
 ## Common Issues and Solutions
 
 1. If you encounter compilation errors related to Hardhat console:
@@ -203,7 +410,14 @@ npx hardhat test
      "devDependencies": {
        "@nomicfoundation/hardhat-toolbox": "^3.0.0",
        "hardhat": "^2.17.0"
+     },
+     "dependencies": {
+       "ipfs-http-client": "^60.0.0",
+       "ethers": "^6.0.0"
      }
    }
    ```
+
+3. Test script deployment address mismatch:
+   - Update the `registryAddress` and `credentialsAddress` in `scripts/test-ipfs-verification.js` with your deployed addresses from Step 3.
 

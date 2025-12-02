@@ -87,6 +87,8 @@ contract CredentialStatus {
     // Struct to store information about a credential
     struct Credential {
         bytes32 credentialHash; // The cryptographic hash of the off-chain credential data (e.g., from IPFS)
+        string ipfsHash;        // IPFS CID where full credential blob is stored
+        bytes credentialSchema; // Metadata about credential type/schema
         address issuer;         // The address of the University that issued it
         address holder;         // The address of the Student who owns it
         uint256 issueDate;      // Timestamp when the credential was issued
@@ -97,10 +99,13 @@ contract CredentialStatus {
     mapping(bytes32 => Credential) public credentials;
 
     // Event emitted when a new credential is issued
-    event CredentialIssued(bytes32 indexed credentialHash, address indexed issuer, address indexed holder);
+    event CredentialIssued(bytes32 indexed credentialHash, address indexed issuer, address indexed holder, string ipfsHash);
 
     // Event emitted when a credential's status is revoked
     event CredentialRevoked(bytes32 indexed credentialHash, address indexed issuer);
+
+    // Event emitted when a credential is verified
+    event CredentialVerified(bytes32 indexed credentialHash, address indexed verifier, bool isValid);
 
     /**
      * @notice Modifier to restrict function access to only addresses with the University role.
@@ -121,29 +126,33 @@ contract CredentialStatus {
     }
 
     /**
-     * @notice Issues a new academic credential.
+     * @notice Issues a new academic credential with IPFS storage reference.
      * @dev Only a registered University can call this function.
      * @param _holder The wallet address of the Student.
      * @param _credentialHash The unique cryptographic hash of the credential data.
+     * @param _ipfsHash The IPFS CID where the full credential blob is stored.
+     * @param _schema Optional schema metadata (e.g., credential type).
      */
-    function issueCredential(address _holder, bytes32 _credentialHash) public onlyUniversity {
+    function issueCredential(address _holder, bytes32 _credentialHash, string memory _ipfsHash, bytes memory _schema) public onlyUniversity {
         // Check that the holder is a registered Student
         require(didRegistry.hasRole(_holder, DIDRegistry.Role.Student), "CredentialStatus: Holder is not a registered Student");
         
         // Ensure this credential hash hasn't been used
         require(credentials[_credentialHash].state == CredentialState.None, "CredentialStatus: Credential hash already exists");
 
-        // Store the new credential
+        // Store the new credential with IPFS reference
         credentials[_credentialHash] = Credential({
             credentialHash: _credentialHash,
+            ipfsHash: _ipfsHash,
+            credentialSchema: _schema,
             issuer: msg.sender,
             holder: _holder,
             issueDate: block.timestamp,
             state: CredentialState.Valid
         });
 
-        // Emit the issuance event
-        emit CredentialIssued(_credentialHash, msg.sender, _holder);
+        // Emit the issuance event with IPFS hash
+        emit CredentialIssued(_credentialHash, msg.sender, _holder, _ipfsHash);
     }
 
     /**
@@ -183,5 +192,43 @@ contract CredentialStatus {
      */
     function isCredentialValid(bytes32 _credentialHash) public view returns (bool) {
         return credentials[_credentialHash].state == CredentialState.Valid;
+    }
+
+    /**
+     * @notice Verify a credential by recomputing hash from data and comparing with on-chain commitment.
+     * @dev Anyone (e.g., an Employer/Verifier) can call this function to verify a credential.
+     * @param _credentialData The original credential data (plaintext or JSON).
+     * @param _credentialHash The on-chain stored credential hash.
+     * @return true if the recomputed hash matches the on-chain hash AND credential is Valid.
+     */
+    function verifyCredentialData(string memory _credentialData, bytes32 _credentialHash) public returns (bool) {
+        // Recompute hash from provided data
+        bytes32 computedHash = keccak256(abi.encodePacked(_credentialData));
+        
+        // Check if computed hash matches on-chain hash and credential is valid
+        bool isValid = (computedHash == _credentialHash) && credentials[_credentialHash].state == CredentialState.Valid;
+        
+        // Emit verification event for audit trail (no PII)
+        emit CredentialVerified(_credentialHash, msg.sender, isValid);
+        
+        return isValid;
+    }
+
+    /**
+     * @notice Get full credential metadata (IPFS hash, schema, issuer, dates).
+     * @param _credentialHash The credential hash to retrieve.
+     * @return The Credential struct with all metadata.
+     */
+    function getCredentialMetadata(bytes32 _credentialHash) public view returns (Credential memory) {
+        return credentials[_credentialHash];
+    }
+
+    /**
+     * @notice Get only the IPFS hash for a credential (to retrieve the full blob).
+     * @param _credentialHash The credential hash.
+     * @return The IPFS CID string.
+     */
+    function getCredentialIPFSHash(bytes32 _credentialHash) public view returns (string memory) {
+        return credentials[_credentialHash].ipfsHash;
     }
 }
