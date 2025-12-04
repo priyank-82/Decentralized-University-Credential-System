@@ -301,7 +301,6 @@
     </header>
 
     <div class="grid">
-      <!-- CONNECTION CARD -->
       <div class="card">
         <h2>🔗 Connection</h2>
         
@@ -323,7 +322,6 @@
         <div id="networkOutput" class="output" style="display: none;"></div>
       </div>
 
-      <!-- ACCOUNTS CARD -->
       <div class="card">
         <h2>👥 Test Accounts</h2>
         <p style="font-size: 0.9em; color: #666; margin-bottom: 12px;">These are pre-funded accounts from the local Hardhat node.</p>
@@ -356,7 +354,6 @@
       </div>
     </div>
 
-    <!-- STEP 2: REGISTER IDENTITIES -->
     <div class="card">
       <div class="step-header">📋 STEP 1: Register Identities</div>
       
@@ -374,7 +371,6 @@
       <div id="registerOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 2: CREATE & HASH CREDENTIAL -->
     <div class="card">
       <div class="step-header">🔐 STEP 2: Create Credential Data</div>
       
@@ -399,7 +395,6 @@
       <div id="hashOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 3: ISSUE CREDENTIAL -->
     <div class="card">
       <div class="step-header">✍️ STEP 3: Issue Credential (University Issues to Student)</div>
       
@@ -418,7 +413,6 @@
       <div id="issueOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 4: RETRIEVE METADATA -->
     <div class="card">
       <div class="step-header">📂 STEP 4: Retrieve Credential Metadata</div>
       
@@ -449,10 +443,12 @@
       </table>
     </div>
 
-    <!-- STEP 5: CHECK STATUS -->
     <div class="card">
       <div class="step-header">✓ STEP 5: Check Credential Status</div>
       
+      <label>Credential Hash To Check</label>
+      <input id="checkStatusHashInput" type="text" placeholder="Paste credential hash here..." />
+
       <button onclick="checkCredentialStatus()" id="statusBtn" disabled>Check Credential Status</button>
 
       <div id="statusOutput" class="credential-result" style="display: none;">
@@ -460,7 +456,6 @@
       </div>
     </div>
 
-    <!-- STEP 6: VERIFY CREDENTIAL -->
     <div class="card">
       <div class="step-header">🔍 STEP 6: Verify Credential Data (Employer Verifies)</div>
       
@@ -474,7 +469,6 @@
       <div id="verifyOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 7: RETRIEVE IPFS HASH -->
     <div class="card">
       <div class="step-header">📥 STEP 7: Get IPFS Hash for Off-Chain Retrieval</div>
       
@@ -484,7 +478,6 @@
       <div id="ipfsHashOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 8: REVOKE CREDENTIAL -->
     <div class="card">
       <div class="step-header">🚫 STEP 8: Revoke Credential (University Revokes)</div>
       
@@ -498,7 +491,6 @@
       <div id="revokeOutput" class="output" style="display: none;"></div>
     </div>
 
-    <!-- STEP 9: CHECK STATUS AFTER REVOKE -->
     <div class="card">
       <div class="step-header">✗ STEP 9: Verify Revocation</div>
       
@@ -509,7 +501,6 @@
       </div>
     </div>
 
-    <!-- STEP 10: TEST ERROR HANDLING -->
     <div class="card">
       <div class="step-header">⚠️ STEP 10: Test Error Handling</div>
       
