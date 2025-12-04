@@ -421,3 +421,6 @@ npx http-server frontend -c-1
 3. Test script deployment address mismatch:
    - Update the `registryAddress` and `credentialsAddress` in `scripts/test-ipfs-verification.js` with your deployed addresses from Step 3.
 
+4. Running the Gas Analysis:
+   - Run this command to run the gas analysis ``` npx hardhat test test/PerformanceEvaluation.js ```
+   - And run this for the report of the gas cost analysis ``` node test/generateReport.js  ```
